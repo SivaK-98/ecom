@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Orders</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for order status */
+        .status-delivered {
+            background-color: #d4edda; /* Light green */
+        }
+        .status-pending {
+            background-color: #fff3cd; /* Light yellow */
+        }
+        .status-cancelled {
+            background-color: #f8d7da; /* Light red */
+        }
+        .status-processing {
+            background-color: #cce5ff; /* Light blue */
+        }
+    </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Ann Bags</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('view_cart') }}">Go to Cart</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('order_tracker') }}">Your Orders</a> <!-- Order Tracker Link -->
+                </li>
+            </ul>
+            {% if session['username'] %}
+                <span class="navbar-text me-3">
+                    Welcome, {{ session['username'] }}!
+                </span>
+            {% endif %}
+            <form class="d-flex" role="search" action="{{ url_for('search_products') }}" method="GET">
+              <input class="form-control me-2" type="search" placeholder="Search for products" aria-label="Search" name="query" required>
+              <button class="btn btn-outline-success" type="submit">Search</button>
+          </form>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+  <h1>Your Orders</h1>
+
+  <!-- Display flash messages (errors, success) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+          <ul>
+              {% for category, message in messages %}
+                  <li class="{{ category }}">{{ message }}</li>
+              {% endfor %}
+          </ul>
+      {% endif %}
+  {% endwith %}
+
+  <div class="table-responsive">
+      {% if orders %}
+          <table class="table table-bordered">
+              <thead>
+                  <tr>
+                      <th>Order ID</th>
+                      <th>Total Price</th>
+                      <th>Order Date</th>
+                      <th>Shipping Address</th>
+                      <th>Pincode</th>
+                      <th>Status</th>
+                      <th>Status Description</th>
+                      <th>Items</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for order in orders %}
+                  <tr class="{% if order['status'] == 'Delivered' %}status-delivered{% elif order['status'] == 'Pending' %}status-pending{% elif order['status'] == 'Cancelled' %}status-cancelled{% else %}status-processing{% endif %}">
+                      <td>{{ order['_id'] }}</td>
+                      <td>₹{{ order['total_price'] }}</td>
+                      <td>{{ order['order_date'].strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                      <td>{{ order['address'] }}</td>
+                      <td>{{ order['pincode'] }}</td>
+                      <td>{{ order['status'] }}</td>
+                      <td>{{ order['update_description'] or 'No description available' }}</td> <!-- Status description -->
+                      <td>
+                          <ul class="list-unstyled">
+                              {% for item in order['items'] %}
+                                  <li class="media mb-2">
+                                      <img src="{{ item['image'] }}" class="mr-3" alt="{{ item['name'] }}" style="width: 64px; height: 64px;">
+                                      <div class="media-body">
+                                          <strong>{{ item['name'] }}</strong> - ₹{{ item['price'] }}
+                                      </div>
+                                  </li>
+                              {% endfor %}
+                          </ul>
+                      </td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      {% else %}
+          <div class="col-12">
+              <div class="alert alert-warning">You have no orders yet.</div>
+          </div>
+      {% endif %}
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
