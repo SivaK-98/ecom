@@ -1,0 +1,6 @@
+flask
+pymongo
+bson
+datetime
+flask_bcrypt
+werkzeug
