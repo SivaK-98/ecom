@@ -1,6 +1,6 @@
 from flask import Flask, flash, redirect, render_template, request, url_for, session
 from bson import ObjectId
-from . import dbfile
+import dbfile
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from werkzeug.security import generate_password_hash, check_password_hash
