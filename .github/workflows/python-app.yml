@@ -36,4 +36,5 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: run application
       run: |
+        cd /home/runner/work/ecom/ecom/
         python app.py
