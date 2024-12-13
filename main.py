@@ -1,13 +1,39 @@
-from flask import Flask, flash, redirect, render_template, request, url_for, session
-from bson import ObjectId
-import dbfile
+import os
 from datetime import datetime
-from flask_bcrypt import Bcrypt
-from werkzeug.security import generate_password_hash, check_password_hash
 
+import redis
+from bson import ObjectId
+from flask import Flask, flash, redirect, render_template, request, session, url_for
+from flask_bcrypt import Bcrypt
+from flask_session import Session
+from werkzeug.security import check_password_hash, generate_password_hash
+
+import dbfile
 
 app = Flask(__name__)
-app.secret_key = '123xd'  # Change this to a strong secret key
+REDIS_HOST = os.environ["REDIS_HOST"]
+REDIS_USER = os.environ["REDIS_USER"]
+REDIS_PORT = os.environ["REDIS_PORT"]
+REDIS_PASS = os.environ["REDIS_PASS"]
+# Configure the secret key
+app.config['SECRET_KEY'] = 'your_secret_key'
+
+# Configure Redis for session storage
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config[
+    'SESSION_USE_SIGNER'] = True  # Optional: Add extra security by signing the session ID
+app.config[
+    'SESSION_KEY_PREFIX'] = 'your_session_prefix:'  # Optional: Prefix for session keys
+app.config['SESSION_REDIS'] = redis.StrictRedis(host=REDIS_HOST,
+                                                port=int(REDIS_PORT),
+                                                username=REDIS_USER,
+                                                password=REDIS_PASS,
+                                                db=0)
+
+# Initialize the session
+Session(app)
+# Change this to a strong secret key
 bcrypt = Bcrypt(app)
 
 
@@ -16,6 +42,7 @@ bcrypt = Bcrypt(app)
 def initialize_cart():
     if 'cart' not in session:
         session['cart'] = []
+
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -26,7 +53,8 @@ def admin_login():
         # Assuming you have a function in dbfile to verify admin credentials
         admin = dbfile.get_admin_by_username(username)
 
-        if admin and check_password_hash(admin['password'], password):  # Check against hashed password
+        if admin and check_password_hash(
+                admin['password'], password):  # Check against hashed password
             session['admin_logged_in'] = True
             flash('Logged in successfully.', 'success')
             return redirect(url_for('admin_dashboard'))
@@ -35,13 +63,13 @@ def admin_login():
 
     return render_template('admin_login.html')
 
+
 # Logout Route
 @app.route('/admin/logout')
 def admin_logout():
     session.pop('admin_logged_in', None)
     flash('You have been logged out.', 'info')
     return redirect(url_for('admin_login'))
-
 
 
 @app.route('/admin/signup', methods=['GET', 'POST'])
@@ -58,13 +86,16 @@ def admin_signup():
             return redirect(url_for('admin_signup'))
 
         # Check if the admin username or email already exists
-        existing_admin = dbfile.get_admin_by_username(username) or dbfile.get_admin_by_email(email)
+        existing_admin = dbfile.get_admin_by_username(
+            username) or dbfile.get_admin_by_email(email)
         if existing_admin:
-            flash('Admin with this username or email already exists.', 'danger')
+            flash('Admin with this username or email already exists.',
+                  'danger')
             return redirect(url_for('admin_signup'))
 
         # Hash the password using pbkdf2:sha256 (correct method)
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+        hashed_password = generate_password_hash(password,
+                                                 method='pbkdf2:sha256')
 
         # Create new admin record
         admin_data = {
@@ -76,11 +107,12 @@ def admin_signup():
         # Call the dbfile function to save the admin
         dbfile.create_admin(admin_data)
         flash('Admin registered successfully. Please log in.', 'success')
-        
+
         # Redirect to the admin login page after successful signup
         return redirect(url_for('admin_login'))
 
     return render_template('admin_signup.html')
+
 
 @app.route('/admin/dashboard')
 def admin_dashboard():
@@ -88,7 +120,7 @@ def admin_dashboard():
     total_products = dbfile.count_products()
     total_orders = dbfile.count_orders()
     total_users = dbfile.count_users()
-    
+
     # Get order status counts
     status_counts = {
         'Processing': dbfile.count_orders_by_status('Processing'),
@@ -97,13 +129,11 @@ def admin_dashboard():
         'Cancelled': dbfile.count_orders_by_status('Cancelled'),
     }
 
-    return render_template('admin_dashboard.html', 
-                           total_products=total_products, 
-                           total_orders=total_orders, 
+    return render_template('admin_dashboard.html',
+                           total_products=total_products,
+                           total_orders=total_orders,
                            total_users=total_users,
                            status_counts=status_counts)
-
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -128,6 +158,7 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -149,7 +180,8 @@ def signup():
             return redirect(url_for('signup'))
 
         # Hash the password
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        hashed_password = bcrypt.generate_password_hash(password).decode(
+            'utf-8')
 
         # Store user data in MongoDB
         dbfile.create_user(username, email, mobile, hashed_password)
@@ -164,10 +196,13 @@ def signup():
 
     return render_template('signup.html')
 
+
 @app.route('/index')
 def index():
     products = dbfile.fetch_products()  # Fetch products from the database
+    print("Products to be displayed:", products)
     return render_template("base.html", products=products)
+
 
 @app.route("/add_products", methods=["POST", "GET"])
 def add_products():
@@ -199,13 +234,18 @@ def add_products():
 
     return render_template("add_products.html", products=products)
 
+
 @app.route('/delete_product/<product_id>', methods=['POST'])
 def delete_product(product_id):
     # Call your dbfile function to delete the product by ID
-    dbfile.delete_product(product_id)  # Ensure this function is defined in your dbfile
+    dbfile.delete_product(
+        product_id)  # Ensure this function is defined in your dbfile
 
     flash("Product deleted successfully!", "success")
-    return redirect(url_for('add_products'))  # Redirect to the add_products page or wherever you prefer
+    return redirect(
+        url_for('add_products'
+                ))  # Redirect to the add_products page or wherever you prefer
+
 
 @app.route("/add_to_cart", methods=["POST"])
 def add_to_cart():
@@ -215,63 +255,73 @@ def add_to_cart():
     flash("Product added to cart!", "success")
     return redirect(url_for('index'))
 
+
 @app.route("/cart")
 def view_cart():
     # Retrieve products from cart
-    cart_items = [dbfile.get_product_by_id(ObjectId(product_id)) for product_id in session['cart']]
+    cart_items = [
+        dbfile.get_product_by_id(ObjectId(product_id))
+        for product_id in session['cart']
+    ]
     return render_template("cart.html", cart_items=cart_items)
+
 
 @app.route("/checkout", methods=["POST"])
 def checkout():
     if 'cart' not in session or not session['cart']:
-        flash("Your cart is empty. Please add products before checking out.", "error")
+        flash("Your cart is empty. Please add products before checking out.",
+              "error")
         return redirect(url_for('index'))
 
     # Retrieve cart items
-    cart_items = [dbfile.get_product_by_id(product_id) for product_id in session['cart']]
-    
+    cart_items = [
+        dbfile.get_product_by_id(product_id) for product_id in session['cart']
+    ]
+
     # Get address, pincode, and email from the form and session
     address = request.form.get('address')
     pincode = request.form.get('pincode')
     username = session.get('username')  # Get the username from the session
-    email = session.get('email')        # Get the email from the session
+    email = session.get('email')  # Get the email from the session
 
     # Create an order dictionary
     order = {
         "items": cart_items,
         "total_price": sum(item['price'] for item in cart_items),
         "order_date": datetime.now(),  # Capture the current date and time
-        "address": address,             # Store the address
-        "pincode": pincode,             # Store the pincode
-        "username": username,           # Store the username from session
-        "email": email,              # Store the email from session
-        "status":"ordered"
+        "address": address,  # Store the address
+        "pincode": pincode,  # Store the pincode
+        "username": username,  # Store the username from session
+        "email": email,  # Store the email from session
+        "status": "ordered"
     }
 
     # Insert order into MongoDB
-    dbfile.insert_order(order)  # Ensure this function is defined in your dbfile
+    dbfile.insert_order(
+        order)  # Ensure this function is defined in your dbfile
 
     # Clear the cart
     session.pop('cart', None)
     flash("Thank you for your purchase!", "success")
     return redirect(url_for('index'))
 
+
 @app.route('/search', methods=['GET'])
 def search_products():
     query = request.args.get('query')  # Get the search query from the URL
+    products = dbfile.search_products(query) if query else []
+    return render_template(
+        'base.html',
+        products=products)  # Render the products page with the search results
 
-    if query:
-        # Call your database function to search for products
-        products = dbfile.search_products(query)  # Ensure this function is defined in your dbfile
-    else:
-        products = []  # No products if no query is provided
-
-    return render_template('base.html', products=products)  # Render the products page with the search results
 
 @app.route('/product/<product_id>')
 def product_detail(product_id):
-    product = dbfile.get_product_by_id(product_id)  # Fetch product details from the database
-    return render_template('product_detail.html', product=product)  # Render product detail template
+    product = dbfile.get_product_by_id(
+        product_id)  # Fetch product details from the database
+    return render_template('product_detail.html',
+                           product=product)  # Render product detail template
+
 
 @app.route('/order_tracker')
 def order_tracker():
@@ -280,8 +330,10 @@ def order_tracker():
         flash("You need to be logged in to view your orders.", "error")
         return redirect(url_for('login'))
 
-    orders = dbfile.get_orders_by_username(username)  # Fetch orders using the database instance
+    orders = dbfile.get_orders_by_username(
+        username)  # Fetch orders using the database instance
     return render_template('order_tracker.html', orders=orders)
+
 
 @app.route('/admin/order_tracker', methods=['GET', 'POST'])
 def admin_order_tracker():
@@ -290,30 +342,33 @@ def admin_order_tracker():
         order_id = request.form.get('order_id')
         new_status = request.form.get('status')
         description = request.form.get('description')
-        dbfile.update_order_status(order_id, new_status,description)
+        dbfile.update_order_status(order_id, new_status, description)
         flash("Order status updated successfully.", "success")
-    
+
     # Filter orders by username if provided
     username = request.args.get('username', None)
     if username:
         orders = dbfile.get_orders_by_username(username)
     else:
         orders = dbfile.get_orders_by_username(username)
-    
-    return render_template('admin_order_tracker.html', orders=list(orders))
 
+    return render_template('admin_order_tracker.html', orders=list(orders))
 
 
 @app.route('/products')
 def view_products():
-    products = dbfile.get_all_products()  # Fetch all products from the database
+    products = dbfile.get_all_products(
+    )  # Fetch all products from the database
     return render_template('product_list.html', products=products)
+
 
 @app.route('/logout')
 def logout():
     # Clear the session or perform logout logic
     session.pop('username', None)  # Remove user from session
-    return redirect(url_for('index'))  # Redirect to the home page or login page
+    return redirect(
+        url_for('index'))  # Redirect to the home page or login page
+
 
 if __name__ == "__main__":
     app.run(debug=True)

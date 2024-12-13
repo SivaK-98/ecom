@@ -57,12 +57,20 @@
     </style>
 </head>
 <body>
+    <nav>
+        <div class="nav-wrapper blue">
+            <a href="#" class="brand-logo center">Your Company</a>
+            <ul id="nav-mobile" class="right">
+                <li><a href="{{ url_for('admin_login') }}">Admin Console</a></li>
+            </ul>
+        </div>
+    </nav>
 
     <!-- Login Form Container -->
     <div class="container">
         <!-- Logo and Company Name Section -->
         <div class="logo-container">
-            <img src="your-logo-url.png" alt="Logo"> <!-- Replace with your logo image -->
+            <img src="static/images/bags.png" alt="Logo"> <!-- Replace with your logo image -->
             <div class="company-name">Your Company Name</div>
         </div>
 
@@ -78,7 +86,7 @@
                 </ul>
             {% endif %}
         {% endwith %}
-
+        
         <!-- Login Form -->
         <form method="POST" action="{{ url_for('login') }}">
             <div class="input-field mb-3">

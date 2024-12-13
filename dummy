@@ -1,0 +1,13 @@
+from pymongo import MongoClient
+from gridfs import GridFS
+
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client['image_database']
+fs = GridFS(db)
+
+# Upload the image
+with open('path_to_image.jpg', 'rb') as image_file:
+    file_id = fs.put(image_file, filename="example.jpg")
+
+print(f"Image uploaded successfully with file ID: {file_id}")
