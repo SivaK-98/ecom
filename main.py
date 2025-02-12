@@ -1,15 +1,15 @@
 import os
 from datetime import datetime
-
 import redis
 from bson import ObjectId
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_bcrypt import Bcrypt
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
-
 import dbfile
-
+from dotenv import load_dotenv, dotenv_values 
+# loading variables from .env file
+load_dotenv()
 app = Flask(__name__)
 REDIS_HOST = os.environ["REDIS_HOST"]
 REDIS_USER = os.environ["REDIS_USER"]
@@ -371,4 +371,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,host="0.0.0.0",port=5000)

@@ -1,16 +1,20 @@
 from pymongo import MongoClient
 from bson import ObjectId
 import os
+from dotenv import load_dotenv, dotenv_values 
+# loading variables from .env file
+load_dotenv()
 # Connect to the database
 
-mongouser = os.environ["MONGOUSER"]
-cluster = os.environ["MONGOCLUSTER"]
-mongopass = os.environ["MONGOPASS"]
-url = f"mongodb+srv://{mongouser}:{mongopass}@{cluster}/"
+mongouser = os.getenv("MONGO_USER")
+cluster = os.getenv("MONGO_HOST")
+mongopass = os.getenv("MONGO_PASS")
+url = f"mongodb://{mongouser}:{mongopass}@{cluster}/"
+dbname = os.getenv("MONGO_DB")
 print(url)
 # Database setup
 client = MongoClient(url)
-db = client['ecom']  # Use your database name
+db = client[dbname]  # Use your database name
 products_collection = db['products']
 users_collection = db['users']
 orders_collection = db['orders']
