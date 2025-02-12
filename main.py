@@ -72,7 +72,7 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 
-@app.route('/admin/signup', methods=['GET', 'POST'])
+@app.route('/admin_signup', methods=['GET', 'POST'])
 def admin_signup():
     if request.method == 'POST':
         username = request.form['username']

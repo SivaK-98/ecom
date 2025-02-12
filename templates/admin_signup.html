@@ -4,11 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Signup</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Materialize CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Google Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background: #e3f2fd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .signup-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .form-label {
+            color: #1e88e5;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Admin Signup</h2>
+
+    <div class="signup-container">
+        <h4 class="blue-text text-darken-2">Admin Signup</h4>
 
         <!-- Flash messages for success/failure -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -25,27 +57,31 @@
 
         <!-- Signup Form -->
         <form method="POST" action="{{ url_for('admin_signup') }}">
-            <div class="mb-3">
+            <div class="input-field">
+                <input type="text" id="username" name="username" required>
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
             </div>
-            <div class="mb-3">
+            <div class="input-field">
+                <input type="email" id="email" name="email" required>
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" required>
             </div>
-            <div class="mb-3">
+            <div class="input-field">
+                <input type="password" id="password" name="password" required>
                 <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <div class="mb-3">
+            <div class="input-field">
+                <input type="password" id="confirm_password" name="confirm_password" required>
                 <label for="confirm_password" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Signup</button>
+            <button type="submit" class="btn blue darken-2 waves-effect waves-light">Signup</button>
         </form>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Materialize JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        M.AutoInit();  // Initialize Materialize components
+    </script>
+
 </body>
 </html>
