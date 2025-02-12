@@ -11,10 +11,10 @@ from dotenv import load_dotenv, dotenv_values
 # loading variables from .env file
 load_dotenv()
 app = Flask(__name__)
-REDIS_HOST = os.environ["REDIS_HOST"]
-REDIS_USER = os.environ["REDIS_USER"]
-REDIS_PORT = os.environ["REDIS_PORT"]
-REDIS_PASS = os.environ["REDIS_PASS"]
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_USER = os.getenv("REDIS_USER")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_PASS = os.getenv("REDIS_PASS")
 # Configure the secret key
 app.config['SECRET_KEY'] = 'your_secret_key'
 
