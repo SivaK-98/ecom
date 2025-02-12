@@ -9,7 +9,7 @@ load_dotenv()
 mongouser = os.getenv("MONGO_USER")
 cluster = os.getenv("MONGO_HOST")
 mongopass = os.getenv("MONGO_PASS")
-url = f"mongodb://{mongouser}:{mongopass}@{cluster}/"
+url = f"mongodb+srv://{mongouser}:{mongopass}@{cluster}/"
 dbname = os.getenv("MONGO_DB")
 print(url)
 # Database setup
